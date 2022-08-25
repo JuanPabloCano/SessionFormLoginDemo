@@ -9,11 +9,15 @@ const config = require("./config/config");
 const dbConfig = require("./config/databaseConfig");
 const User = require("./models/User");
 const app = express();
-
+const yargs = require("yargs")(process.argv.slice(2));
 app.engine(".hbs", exphbs.engine({extname: ".hbs", defaultLayout: "main.hbs"}));
 app.set("view engine", ".hbs");
 
-const port = 8080;
+const args = yargs.alias({
+    port: "port"
+}).default({
+    port: 8080
+}).argv;
 
 function hashPassword(password) {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(10));
@@ -100,6 +104,12 @@ passport.deserializeUser((id, done) => {
 
 app.get("/", routes.getRoot);
 
+// INFO
+app.get("/info", routes.getInfo);
+
+// Api-Random
+app.get("/api/randoms", routes.getRandoms);
+
 //  LOGIN
 app.get("/login", routes.getLogin);
 app.post(
@@ -142,8 +152,8 @@ dbConfig.conectarDB(config.URL_BASE_DE_DATOS, (err) => {
     if (err) return console.log("error en conexión de base de datos", err);
     console.log("BASE DE DATOS CONECTADA");
 
-    app.listen(port, (err) => {
+    app.listen(args.port, (err) => {
         if (err) return console.log("error en listen server", err);
-        console.log(`Server running on port ${port}`);
+        console.log(`Server running on port ${args.port}`);
     });
 });
